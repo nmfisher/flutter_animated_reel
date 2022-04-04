@@ -13,12 +13,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,16 +22,18 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: SizedBox(
-              height: 500,
-              child: Reel(
-                  height: 240,
+          child: Container(
+            height:100,
+            color:Colors.grey,
+              child: 
+              Reel(
                   duration: Duration(seconds:5),
                   iterations: 3,
-                  children:
-                      List.generate(10, (index) => Container(height:24, child:Text(index.toString()))))),
+                  // itemCount:10,
+                  height: 10 * 10,
+                  children:List.generate(10, (index) => Text(index.toString(),key:ValueKey("candidate$index") )).cast<Widget>() ), 
         ),
       ),
-    );
+    ));
   }
 }
