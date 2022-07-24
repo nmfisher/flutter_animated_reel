@@ -2,13 +2,19 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:infinite_listview/infinite_listview.dart';
+import 'infinite_list_view.dart';
 
 ///
 /// Renders a (user-scrollable) list of [children] with an animated "reel" effect on first load (think a slot machine).
 /// The scroll animation will spin the list [iterations] times over the total [duration], decelerating to eventually stop at offset 0.
 ///
 class Reel extends StatefulWidget {
+
+  ///
+  /// The axis on which the ListView will be scrollable.
+  /// 
+  final Axis axis;
+
   ///
   /// The number of child widgets.
   ///
@@ -24,11 +30,24 @@ class Reel extends StatefulWidget {
   ///
   final Duration duration;
 
-  const Reel({
+  /// 
+  /// Width/height of each item.
+  /// 
+  double? itemExtent;
+
+  ///
+  /// Callback when the initial animation is complete.
+  ///
+  final void Function()? onComplete;
+  
+  Reel({
     Key? key,
     required this.children,
     required this.iterations,
     required this.duration,
+    this.axis=Axis.vertical,
+    this.itemExtent,
+    this.onComplete
   }) : super(key: key);
 
   @override
@@ -80,7 +99,11 @@ class _ReelState extends State<Reel> with SingleTickerProviderStateMixin {
   }
 
   late List<GlobalKey> _keys;
-  late double _height;
+  
+  /// 
+  /// Height for vertical scroll, width for horizontal scroll
+  /// 
+  late double _size;
 
   @override
   void initState() {
@@ -93,12 +116,18 @@ class _ReelState extends State<Reel> with SingleTickerProviderStateMixin {
           _animationController.value * widget.duration.inMilliseconds / 1000);
       _scrollController.jumpTo(offset);
     });
+
+    _animationController.addStatusListener((status) {
+      if(status == AnimationStatus.completed) {
+        widget.onComplete?.call();
+      }
+    });
     _keys = widget.children.map((c) => GlobalKey()).toList();
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-      _height = _keys
-          .map((e) => e.currentContext!.size!.height)
-          .reduce((height, accum) => accum + height);
-      final distance = _height * widget.iterations;
+      _size = _keys
+          .map((e) => widget.axis == Axis.vertical ? e.currentContext!.size!.height : e.currentContext!.size!.width)
+          .reduce((v, accum) => accum + v);
+      final distance = _size * widget.iterations;
       calculateParams(
           distance.toDouble(), widget.duration.inMilliseconds / 1000);
       _animationController.forward();
@@ -107,7 +136,15 @@ class _ReelState extends State<Reel> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return InfiniteListView.builder(itemBuilder: (ctx, idx) {
+    if(widget.children.length == 0) {
+      return Container();
+    }
+    return InfiniteListView.builder(
+      scrollDirection: widget.axis,
+      snap: true,
+      snapTreshold: 50,
+      itemExtent: widget.itemExtent,
+      itemBuilder: (ctx, idx) {
               return idx >= 0 && idx < widget.children.length
                   ? Container(key: _keys[idx], child: widget.children[idx])
                   : widget.children[idx.abs() % widget.children.length];}
