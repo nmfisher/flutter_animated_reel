@@ -39,6 +39,11 @@ class Reel extends StatefulWidget {
   /// Callback when the initial animation is complete.
   ///
   final void Function()? onComplete;
+
+  ///
+  /// Callback when an item is scrolled & snapped.
+  /// 
+  final void Function(int)? onSelect;
   
   Reel({
     Key? key,
@@ -47,7 +52,8 @@ class Reel extends StatefulWidget {
     required this.duration,
     this.axis=Axis.vertical,
     this.itemExtent,
-    this.onComplete
+    this.onComplete,
+    this.onSelect
   }) : super(key: key);
 
   @override
@@ -140,9 +146,10 @@ class _ReelState extends State<Reel> with SingleTickerProviderStateMixin {
       return Container();
     }
     return InfiniteListView.builder(
+      onSnap: (idx) => widget.onSelect?.call(idx % widget.children.length),
       scrollDirection: widget.axis,
-      snap: true,
-      snapTreshold: 50,
+      snap: _animationController.status == AnimationStatus.completed,
+      snapTreshold: 25 ,
       itemExtent: widget.itemExtent,
       itemBuilder: (ctx, idx) {
               return idx >= 0 && idx < widget.children.length
