@@ -1,5 +1,5 @@
-import 'package:animated_reel/reel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animated_reel/reel.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,8 +29,9 @@ class _MyAppState extends State<MyApp> {
               Reel(
                   duration: Duration(seconds:5),
                   iterations: 3,
+                  axis: Axis.horizontal,
                   // itemCount:10,
-                  height: 10 * 10,
+                  // height: 10 * 10,
                   children:List.generate(10, (index) => Text(index.toString(),key:ValueKey("candidate$index") )).cast<Widget>() ), 
         ),
       ),
